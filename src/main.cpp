@@ -8,6 +8,7 @@ void print_usage(const char *name)
     std::cout << name << " create <file_path> <message>" << std::endl;
     std::cout << name << " list" << std::endl;
     std::cout << name << " restore <index> <file_path>" << std::endl;
+    std::cout << name << " diff <base_index> <alt_index>" << std::endl;
     std::cout << name << " --help" << std::endl;
 }
 
@@ -42,6 +43,12 @@ int main(int argc, char **argv)
         size_t index = std::stoi(argv[2]);
         std::string file_path = argv[3];
         vcs.restore(index, file_path);
+    }
+    else if (command == "diff" && argc == 4)
+    {
+        size_t base_index = std::stoul(argv[2]);
+        size_t alt_index = std::stoul(argv[3]);
+        vcs.diff(base_index, alt_index);
     }
     else
     {

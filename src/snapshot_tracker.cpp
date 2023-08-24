@@ -80,13 +80,13 @@ void SnapshotTracker::list()
     }
 }
 
-void SnapshotTracker::restore(size_t index, const std::string &file_path)
+std::string SnapshotTracker::load_snapshot(size_t index)
 {
     std::string version_file = ".versions/snapshot_" + std::to_string(index);
     if (!fs::exists(version_file))
     {
         std::cerr << "Snapshot " << index << " does not exist." << std::endl;
-        return;
+        return "";
     }
 
     std::ifstream infile(version_file, std::ios::binary);
@@ -101,7 +101,13 @@ void SnapshotTracker::restore(size_t index, const std::string &file_path)
     infile.close();
 
     // Decompress the content
-    std::string decompressed_content = compressor->decompress(compressed_content);
+    return compressor->decompress(compressed_content);
+}
+
+void SnapshotTracker::restore(size_t index, const std::string &file_path)
+{
+    // Decompress the content
+    std::string decompressed_content = load_snapshot(index);
 
     // Write the decompressed content back to the original file
     std::ofstream outfile(file_path, std::ios::binary);
@@ -109,4 +115,55 @@ void SnapshotTracker::restore(size_t index, const std::string &file_path)
     outfile.close();
 
     std::cout << "Restored snapshot " << index << " to " << file_path << std::endl;
+}
+
+void SnapshotTracker::diff(size_t base_index, size_t alt_index)
+{
+    std::string base_content = load_snapshot(base_index);
+    std::string alt_content = load_snapshot(alt_index);
+
+    std::istringstream base_stream(base_content);
+    std::istringstream alt_stream(alt_content);
+
+    std::string base_line, alt_line;
+    size_t line_number = 0;
+
+    while (true)
+    {
+        std::getline(base_stream, base_line);
+        std::getline(alt_stream, alt_line);
+
+        bool base_has_no_line = base_line.empty();
+        bool alt_has_no_line = alt_line.empty();
+
+        // End of both files, break.
+        if (base_has_no_line && alt_has_no_line)
+        {
+            break;
+        }
+
+        line_number++;
+
+        if (base_has_no_line)
+        {
+            // If the first snapshot is exhausted, but not the second.
+            std::cout << "Line " << line_number << ":" << std::endl;
+            std::cout << "+ " << alt_line << std::endl;
+        }
+        else if (alt_has_no_line)
+        {
+            // If the second snapshot is exhausted, but not the first.
+            std::cout << "Line " << line_number << ":" << std::endl;
+            std::cout << "- " << base_line << std::endl;
+        }
+        else if (base_line != alt_line)
+        {
+            std::cout << "Line " << line_number << ":" << std::endl;
+            std::cout << "- " << base_line << std::endl;
+            std::cout << "+ " << alt_line << std::endl;
+        }
+
+        base_line.clear();
+        alt_line.clear();
+    }
 }
