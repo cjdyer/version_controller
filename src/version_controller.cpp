@@ -87,12 +87,8 @@ void VersionController::diff(size_t base_index, size_t alt_index)
 
 void VersionController::list()
 {
-    std::cout << "Snapshots:" << std::endl;
-    for (const auto &snapshot : file_manager.get_snapshots())
-    {
-        std::string message = file_manager.read_file(".versions/" + snapshot);
-        std::cout << snapshot << " - " << message.substr(0, message.find('\n')) << std::endl;
-    }
+    std::cout << "Current branch: " << branch_manager.get_current_branch_name() 
+            << ", Index: " << branch_manager.get_current_branch_snapshot_index() << std::endl;
 }
 
 std::string VersionController::load_snapshot(size_t index)
