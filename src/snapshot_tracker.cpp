@@ -1,13 +1,18 @@
 #include <fstream>
 #include "snapshot_tracker.h"
 
+SnapshotTracker::SnapshotTracker() : compressor(std::make_unique<LZ77Compression>()) {}
+
 void SnapshotTracker::create(const std::string &file_path)
 {
-    std::ifstream file(file_path);
+    std::ifstream file(file_path, std::ios::binary);
     if (file.is_open())
     {
         std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-        versions.push_back(content);
+
+        std::vector<uint8_t> compressed_data = compressor->compress(content);
+        versions.push_back(compressed_data);
+
         std::cout << "Snapshot created successfully." << std::endl;
     }
     else
@@ -18,21 +23,20 @@ void SnapshotTracker::create(const std::string &file_path)
 
 void SnapshotTracker::list()
 {
-    std::cout << "Listing all snapshots:" << std::endl;
-    for (size_t i = 0; i < versions.size(); ++i)
-    {
-        std::cout << i << ": " << (versions[i].substr(0, 30) + "...") << std::endl;
-    }
+    std::cout << "There are " << versions.size() << " Snapshots" << std::endl;
 }
 
 void SnapshotTracker::restore(size_t index, const std::string &file_path)
 {
     if (index >= 0 && index < versions.size())
     {
-        std::ofstream file(file_path);
+        // Decompress the data
+        std::string decompressed_data = compressor->decompress(versions[index]);
+
+        std::ofstream file(file_path, std::ios::binary);
         if (file.is_open())
         {
-            file << versions[index];
+            file.write(decompressed_data.data(), decompressed_data.size());
             std::cout << "Snapshot restored successfully." << std::endl;
         }
         else
