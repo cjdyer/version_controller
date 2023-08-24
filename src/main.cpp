@@ -1,41 +1,51 @@
 #include "snapshot_tracker.h"
+#include <iostream>
+#include <string>
 
-int main()
+void print_usage(const char *name)
+{
+    std::cout << "Usage: " << std::endl;
+    std::cout << name << " create <file_path>" << std::endl;
+    std::cout << name << " list" << std::endl;
+    std::cout << name << " restore <index> <file_path>" << std::endl;
+    std::cout << name << " --help" << std::endl;
+}
+
+int main(int argc, char **argv)
 {
     SnapshotTracker vcs;
-    std::string file_path = "../test.txt";
 
-    while (true)
+    if (argc < 2)
     {
-        std::cout << "1. Create snapshot" << std::endl;
-        std::cout << "2. List snapshots" << std::endl;
-        std::cout << "3. Restore snapshot" << std::endl;
-        std::cout << "4.Exit" << std::endl;
+        print_usage(argv[0]);
+        return 1;
+    }
 
-        std::cout << "Enter your choice: ";
-        int choice;
-        std::cin >> choice;
+    std::string command = argv[1];
 
-        switch (choice)
-        {
-        case 1:
-            vcs.create(file_path);
-            break;
-        case 2:
-            vcs.list();
-            break;
-        case 3:
-            std::cout << "Enter snapshot index to restore: ";
-            size_t index;
-            std::cin >> index;
-
-            vcs.restore(index, file_path);
-            break;
-        case 4:
-            return 0;
-        default:
-            std::cout << "Invalid choice." << std::endl;
-        }
+    if (command == "--help")
+    {
+        print_usage(argv[0]);
+    }
+    else if (command == "create" && argc == 3)
+    {
+        std::string file_path = argv[2];
+        vcs.create(file_path);
+    }
+    else if (command == "list")
+    {
+        vcs.list();
+    }
+    else if (command == "restore" && argc == 4)
+    {
+        size_t index = std::stoi(argv[2]);
+        std::string file_path = argv[3];
+        vcs.restore(index, file_path);
+    }
+    else
+    {
+        std::cout << "Invalid command or wrong number of arguments." << std::endl;
+        print_usage(argv[0]);
     }
 
     return 0;
