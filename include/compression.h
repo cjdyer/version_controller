@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+// Can only use LZ77 at the moment, but this is more of a conceptual project anyway
 class Compression
 {
 public:

@@ -15,6 +15,9 @@ void VersionController::create(const std::string &file_path, const std::string &
     // Save the compressed content along with the message
     std::string version_file = file_manager.get_next_snapshot_name();
     file_manager.write_file(version_file, message + "\n" + std::string(compressed_content.begin(), compressed_content.end()));
+    
+    // Update the branch manager
+    branch_manager.add_snapshot();
 
     std::cout << "Snapshot created and saved to: " << version_file << std::endl;
 }
@@ -100,4 +103,25 @@ std::string VersionController::load_snapshot(size_t index)
     std::string compressed_content = message_and_content.substr(message_and_content.find('\n') + 1);
 
     return compressor->decompress(std::vector<uint8_t>(compressed_content.begin(), compressed_content.end()));
+}
+
+void VersionController::create_branch(const std::string &branch_name)
+{
+    branch_manager.create_branch(branch_name);
+}
+
+void VersionController::switch_to_branch(const std::string &branch_name)
+{
+    branch_manager.switch_to_branch(branch_name);    
+    size_t switch_index = branch_manager.get_current_branch_snapshot_index();
+
+    restore(switch_index, "test.txt");
+}
+
+void VersionController::merge_branch(const std::string &source_branch, const std::string &dest_branch)
+{
+    branch_manager.merge_branch(source_branch, dest_branch);
+    size_t switch_index = branch_manager.get_current_branch_snapshot_index();
+
+    restore(switch_index, "test.txt");
 }

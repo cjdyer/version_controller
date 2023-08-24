@@ -9,6 +9,9 @@ void print_usage(const char *name)
     std::cout << name << " list" << std::endl;
     std::cout << name << " restore <index> <file_path>" << std::endl;
     std::cout << name << " diff <base_index> <alt_index>" << std::endl;
+    std::cout << name << " branch <branch_name>" << std::endl;
+    std::cout << name << " switch <branch_name>" << std::endl;
+    std::cout << name << " merge <source_branch> <dest_branch>" << std::endl;
     std::cout << name << " --help" << std::endl;
 }
 
@@ -49,6 +52,22 @@ int main(int argc, char **argv)
         size_t base_index = std::stoul(argv[2]);
         size_t alt_index = std::stoul(argv[3]);
         vcs.diff(base_index, alt_index);
+    }
+    else if (command == "branch" && argc == 3)
+    {
+        std::string branch_name = argv[2];
+        vcs.create_branch(branch_name);
+    }
+    else if (command == "switch" && argc == 3)
+    {
+        std::string branch_name = argv[2];
+        vcs.switch_to_branch(branch_name);
+    }
+    else if (command == "merge" && argc == 4)
+    {
+        std::string source_branch = argv[2];
+        std::string dest_branch = argv[3];
+        vcs.merge_branch(source_branch, dest_branch);
     }
     else
     {
