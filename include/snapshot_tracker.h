@@ -1,7 +1,6 @@
 #ifndef __SNAPSHOT_TRACKER_H__
 #define __SNAPSHOT_TRACKER_H__
 
-#include <iostream>
 #include <vector>
 #include <string>
 #include <memory>
@@ -18,8 +17,10 @@ public:
     void list();
 
 private:
-    std::vector<std::vector<uint8_t>> versions;
+    void initialise_snapshot_index();
 
+private:
+    size_t snapshot_index;
     std::unique_ptr<Compression> compressor;
 };
 

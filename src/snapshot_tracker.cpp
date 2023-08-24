@@ -1,51 +1,98 @@
+#include <iostream>
 #include <fstream>
+#include <filesystem>
+
 #include "snapshot_tracker.h"
 
-SnapshotTracker::SnapshotTracker() : compressor(std::make_unique<LZ77Compression>()) {}
+namespace fs = std::filesystem;
+
+SnapshotTracker::SnapshotTracker() : compressor(std::make_unique<LZ77Compression>())
+{
+    // Ensure the .versions directory exists
+    if (!fs::exists(".versions"))
+    {
+        fs::create_directory(".versions");
+    }
+
+    initialise_snapshot_index();
+}
+
+void SnapshotTracker::initialise_snapshot_index()
+{
+    size_t highest_index = 0;
+    bool found_snapshots = false;
+
+    for (const auto &entry : fs::directory_iterator(".versions"))
+    {
+        std::string filename = entry.path().filename().string();
+        if (filename.find("snapshot_") == 0)
+        {
+            found_snapshots = true;
+            // Extract the index from "snapshot_X" format
+            size_t current_index = std::stoul(filename.substr(9));
+            if (current_index > highest_index)
+            {
+                highest_index = current_index;
+            }
+        }
+    }
+
+    snapshot_index = found_snapshots ? highest_index + 1 : 0;
+}
 
 void SnapshotTracker::create(const std::string &file_path)
 {
+    // Read the content from the file
     std::ifstream file(file_path, std::ios::binary);
-    if (file.is_open())
+    if (!file.is_open())
     {
-        std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-        std::vector<uint8_t> compressed_data = compressor->compress(content);
-        versions.push_back(compressed_data);
-
-        std::cout << "Snapshot created successfully." << std::endl;
+        std::cerr << "Error opening file: " << file_path << std::endl;
+        return;
     }
-    else
-    {
-        std::cout << "Error opening file." << std::endl;
-    }
+    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+
+    // Compress the content
+    std::vector<uint8_t> compressed_content = compressor->compress(content);
+
+    // Save the compressed content in a new file in .versions
+    std::string version_file = ".versions/snapshot_" + std::to_string(snapshot_index);
+    std::ofstream outfile(version_file, std::ios::binary);
+
+    outfile.write((char *)&compressed_content[0], compressed_content.size());
+    outfile.close();
+
+    std::cout << "Snapshot created and saved to: " << version_file << std::endl;
 }
 
 void SnapshotTracker::list()
 {
-    std::cout << "There are " << versions.size() << " Snapshots" << std::endl;
+    std::cout << "Snapshots:" << std::endl;
+    for (const auto &entry : fs::directory_iterator(".versions"))
+    {
+        std::cout << entry.path().filename().string() << std::endl;
+    }
 }
 
 void SnapshotTracker::restore(size_t index, const std::string &file_path)
 {
-    if (index >= 0 && index < versions.size())
+    std::string version_file = ".versions/snapshot_" + std::to_string(index);
+    if (!fs::exists(version_file))
     {
-        // Decompress the data
-        std::string decompressed_data = compressor->decompress(versions[index]);
+        std::cerr << "Snapshot " << index << " does not exist." << std::endl;
+        return;
+    }
 
-        std::ofstream file(file_path, std::ios::binary);
-        if (file.is_open())
-        {
-            file.write(decompressed_data.data(), decompressed_data.size());
-            std::cout << "Snapshot restored successfully." << std::endl;
-        }
-        else
-        {
-            std::cout << "Error writing to file." << std::endl;
-        }
-    }
-    else
-    {
-        std::cout << "Invalid snapshot index." << std::endl;
-    }
+    std::ifstream infile(version_file, std::ios::binary);
+    std::vector<uint8_t> compressed_content((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
+
+    // Decompress the content
+    std::string decompressed_content = compressor->decompress(compressed_content);
+
+    // Write the decompressed content back to the original file
+    std::ofstream outfile(file_path, std::ios::binary);
+    outfile.write(decompressed_content.data(), decompressed_content.size());
+    outfile.close();
+
+    std::cout << "Restored snapshot " << index << " to " << file_path << std::endl;
 }
