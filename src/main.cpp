@@ -1,4 +1,4 @@
-#include "snapshot_tracker.h"
+#include "version_controller.h"
 #include <iostream>
 #include <string>
 
@@ -14,7 +14,7 @@ void print_usage(const char *name)
 
 int main(int argc, char **argv)
 {
-    SnapshotTracker vcs;
+    VersionController vcs;
 
     if (argc < 2)
     {
