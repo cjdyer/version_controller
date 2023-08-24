@@ -11,7 +11,7 @@ class SnapshotTracker
 public:
     SnapshotTracker();
 
-    void create(const std::string &file_path);
+    void create(const std::string &file_path, const std::string &message);
     void restore(size_t index, const std::string &file_path);
 
     void list();

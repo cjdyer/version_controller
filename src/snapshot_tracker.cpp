@@ -40,7 +40,7 @@ void SnapshotTracker::initialise_snapshot_index()
     snapshot_index = found_snapshots ? highest_index + 1 : 0;
 }
 
-void SnapshotTracker::create(const std::string &file_path)
+void SnapshotTracker::create(const std::string &file_path, const std::string &message)
 {
     // Read the content from the file
     std::ifstream file(file_path, std::ios::binary);
@@ -55,10 +55,11 @@ void SnapshotTracker::create(const std::string &file_path)
     // Compress the content
     std::vector<uint8_t> compressed_content = compressor->compress(content);
 
-    // Save the compressed content in a new file in .versions
+    // Save the compressed content along with the message
     std::string version_file = ".versions/snapshot_" + std::to_string(snapshot_index);
     std::ofstream outfile(version_file, std::ios::binary);
 
+    outfile << message << "\n";
     outfile.write((char *)&compressed_content[0], compressed_content.size());
     outfile.close();
 
@@ -70,7 +71,12 @@ void SnapshotTracker::list()
     std::cout << "Snapshots:" << std::endl;
     for (const auto &entry : fs::directory_iterator(".versions"))
     {
-        std::cout << entry.path().filename().string() << std::endl;
+        std::ifstream infile(entry.path(), std::ios::binary);
+        std::string message;
+
+        std::getline(infile, message);
+        std::cout << entry.path().filename().string() << " - " << message << std::endl;
+        infile.close();
     }
 }
 
@@ -84,7 +90,15 @@ void SnapshotTracker::restore(size_t index, const std::string &file_path)
     }
 
     std::ifstream infile(version_file, std::ios::binary);
+
+    // Skip the commit message
+    std::string message;
+    std::getline(infile, message);
+
+    // Read the compressed content
     std::vector<uint8_t> compressed_content((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
+
+    infile.close();
 
     // Decompress the content
     std::string decompressed_content = compressor->decompress(compressed_content);
