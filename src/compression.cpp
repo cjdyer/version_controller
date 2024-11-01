@@ -79,18 +79,17 @@ std::string LZ77Compression::token_decompress(const std::vector<LZ77Token> &toke
         if (token.length == 0)
         {
             output.push_back(token.next);
+            continue;
         }
-        else
+        
+        for (size_t i = 0; i < token.length; ++i)
         {
-            for (size_t i = 0; i < token.length; ++i)
-            {
-                output.push_back(output[output.size() - token.offset]);
-            }
+            output.push_back(output[output.size() - token.offset]);
+        }
 
-            if (token.next != 0)
-            {
-                output.push_back(token.next);
-            }
+        if (token.next != 0)
+        {
+            output.push_back(token.next);
         }
     }
 
