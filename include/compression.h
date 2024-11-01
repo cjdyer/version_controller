@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-// Can only use LZ77 at the moment, but this is more of a conceptual project anyway
 class Compression
 {
    public:
@@ -31,6 +30,13 @@ class LZ77Compression : public Compression
 
     static constexpr uint8_t WINDOW_SIZE = 255;
     static constexpr uint8_t BUFFER_SIZE = 15;
+};
+
+class RLECompression : public Compression
+{
+   public:
+    std::vector<uint8_t> compress(const std::string &data) override;
+    std::string decompress(const std::vector<uint8_t> &data) override;
 };
 
 #endif  // __COMPRESSION_H__

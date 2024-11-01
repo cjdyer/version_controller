@@ -1,6 +1,7 @@
 #include "compression.h"
 
 #include <iostream>
+#include <stdexcept>
 
 std::vector<uint8_t> LZ77Compression::compress(const std::string &data)
 {
@@ -86,4 +87,42 @@ std::string LZ77Compression::token_decompress(const std::vector<LZ77Token> &toke
     }
 
     return output;
+}
+
+std::vector<uint8_t> RLECompression::compress(const std::string &data)
+{
+    std::vector<uint8_t> compressed_data;
+
+    for (size_t i = 0; i < data.size(); ++i) {
+        char current_char = data[i];
+        uint8_t count = 1;
+
+        while (i + 1 < data.size() && data[i + 1] == current_char && count < 255) {
+            ++count;
+            ++i;
+        }
+
+        compressed_data.push_back(static_cast<uint8_t>(current_char));
+        compressed_data.push_back(count);
+    }
+
+    return compressed_data;
+}
+
+std::string RLECompression::decompress(const std::vector<uint8_t> &data)
+{
+    std::string decompressed_data;
+
+    for (size_t i = 0; i < data.size(); i += 2) {
+        if (i + 1 >= data.size()) {
+            throw std::runtime_error("Invalid RLE compressed data format.");
+        }
+
+        char current_char = static_cast<char>(data[i]);
+        uint8_t count = data[i + 1];
+
+        decompressed_data.append(count, current_char);
+    }
+
+    return decompressed_data;
 }
