@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 
-VersionController::VersionController() : compressor(std::make_unique<LZ77Compression>()) {}
+VersionController::VersionController() : compressor(get_compression_algorithm(m_compression_type)) {}
 
 void VersionController::create(const std::string &file_path, const std::string &message)
 {

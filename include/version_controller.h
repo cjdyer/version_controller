@@ -35,6 +35,8 @@ class VersionController
     std::unique_ptr<Compression> compressor;
 
     uint16_t snapshot_index;
+
+    static constexpr CompressionType m_compression_type = CompressionType::RLE;
 };
 
 #endif  // __VERSION_CONTROLLER_H__

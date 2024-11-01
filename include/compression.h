@@ -2,8 +2,14 @@
 #define __COMPRESSION_H__
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
+
+enum class CompressionType {
+    LZ77,
+    RLE,
+};
 
 class Compression
 {
@@ -11,6 +17,8 @@ class Compression
     virtual std::vector<uint8_t> compress(const std::string &data) = 0;
     virtual std::string decompress(const std::vector<uint8_t> &data) = 0;
 };
+
+std::unique_ptr<Compression> get_compression_algorithm(CompressionType type);
 
 class LZ77Compression : public Compression
 {

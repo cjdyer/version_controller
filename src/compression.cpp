@@ -3,6 +3,16 @@
 #include <iostream>
 #include <stdexcept>
 
+std::unique_ptr<Compression> get_compression_algorithm(CompressionType type)
+{
+    switch (type) {
+        case CompressionType::LZ77:
+            return std::make_unique<LZ77Compression>();
+        case CompressionType::RLE:
+            return std::make_unique<RLECompression>();
+    }
+}
+
 std::vector<uint8_t> LZ77Compression::compress(const std::string &data)
 {
     auto compressed_tokens = token_compress(data);
