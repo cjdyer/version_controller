@@ -8,20 +8,19 @@
 // Can only use LZ77 at the moment, but this is more of a conceptual project anyway
 class Compression
 {
-public:
+   public:
     virtual std::vector<uint8_t> compress(const std::string &data) = 0;
     virtual std::string decompress(const std::vector<uint8_t> &data) = 0;
 };
 
 class LZ77Compression : public Compression
 {
-public:
+   public:
     std::vector<uint8_t> compress(const std::string &data) override;
     std::string decompress(const std::vector<uint8_t> &data) override;
 
-private:
-    struct LZ77Token
-    {
+   private:
+    struct LZ77Token {
         uint8_t offset;
         uint8_t length;
         uint8_t next;
@@ -34,4 +33,4 @@ private:
     static constexpr uint8_t BUFFER_SIZE = 15;
 };
 
-#endif // __COMPRESSION_H__
+#endif  // __COMPRESSION_H__

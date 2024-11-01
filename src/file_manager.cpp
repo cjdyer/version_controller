@@ -1,14 +1,14 @@
 #include "file_manager.h"
-#include <fstream>
+
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 
 namespace fs = std::filesystem;
 
 FileManager::FileManager()
 {
-    if (!fs::exists(".versions"))
-    {
+    if (!fs::exists(".versions")) {
         fs::create_directory(".versions");
     }
 
@@ -18,8 +18,7 @@ FileManager::FileManager()
 std::string FileManager::read_file(const std::string &file_path)
 {
     std::ifstream file(file_path, std::ios::binary);
-    if (!file.is_open())
-    {
+    if (!file.is_open()) {
         std::cerr << "Error opening file: " << file_path << std::endl;
         return "";
     }
@@ -39,15 +38,12 @@ void FileManager::initialise_snapshot_index()
 {
     size_t highest_index = 0;
     bool found_snapshots = false;
-    for (const auto &entry : fs::directory_iterator(".versions"))
-    {
+    for (const auto &entry : fs::directory_iterator(".versions")) {
         std::string filename = entry.path().filename().string();
-        if (filename.find("snapshot_") == 0)
-        {
+        if (filename.find("snapshot_") == 0) {
             found_snapshots = true;
             size_t current_index = std::stoul(filename.substr(9));
-            if (current_index > highest_index)
-            {
+            if (current_index > highest_index) {
                 highest_index = current_index;
             }
         }
@@ -63,8 +59,7 @@ std::string FileManager::get_next_snapshot_name()
 std::vector<std::string> FileManager::get_snapshots()
 {
     std::vector<std::string> snapshots;
-    for (const auto &entry : fs::directory_iterator(".versions"))
-    {
+    for (const auto &entry : fs::directory_iterator(".versions")) {
         snapshots.push_back(entry.path().filename().string());
     }
     return snapshots;

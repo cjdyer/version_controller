@@ -1,12 +1,13 @@
 #ifndef __BRANCH_MANAGER_H__
 #define __BRANCH_MANAGER_H__
 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 
-class BranchManager {
-public:
+class BranchManager
+{
+   public:
     BranchManager();
 
     void create_branch(const std::string &branch_name);
@@ -18,7 +19,7 @@ public:
 
     void add_snapshot();
 
-private:
+   private:
     struct Branch {
         ssize_t latest_snapshot;
     };
@@ -30,4 +31,4 @@ private:
     std::string current_branch;
 };
 
-#endif // __BRANCH_MANAGER_H__
+#endif  // __BRANCH_MANAGER_H__
